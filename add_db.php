@@ -307,8 +307,11 @@ function addEntry() {
 			$id = -1;
 		}
 		
+		// preserve the "-" if there is already one, otherwise add it
+		$avg_dBm = $_REQUEST["add_avgdbm"];
+		$avg_dBm = ($_REQUEST["add_avgdbm"] != "" && substr($_REQUEST["add_avgdbm"], 0, 1) == "-") ? $avg_dBm : "-". $avg_dBm;
 		
-		$sql = "INSERT INTO ". $dbt_data ." SET provider = ". $data_items["provider"] .", modem = ". $data_items["modem"] .", firmware = ". $data_items["firmware"] .", kernel = ". $data_items["kernel"] .", region = ". $data_items["region"] .", phone_quality = ". $_REQUEST["phoneq"] .", internet_quality = ". $_REQUEST["inetq"] .", avg_dBm = '-". $_REQUEST["add_avgdbm"] ."', timetested = ". $_REQUEST["add_timetested"];
+		$sql = "INSERT INTO ". $dbt_data ." SET provider = ". $data_items["provider"] .", modem = ". $data_items["modem"] .", firmware = ". $data_items["firmware"] .", kernel = ". $data_items["kernel"] .", region = ". $data_items["region"] .", phone_quality = ". $_REQUEST["phoneq"] .", internet_quality = ". $_REQUEST["inetq"] .", avg_dBm = '". avg_dBm ."', timetested = ". $_REQUEST["add_timetested"];
 		logMessage("addEntry: $sql >". $sql ."<");
 		mysql_query($sql) or die("Fehler bei Abfrage >". $sql ."< : ". mysql_errno ." (". mysql_error() .")");
 
