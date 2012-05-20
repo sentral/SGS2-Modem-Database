@@ -279,7 +279,7 @@ function addEntry() {
 			$inserts["provider"] = "INSERT INTO ". $dbt_provider ." SET provider = '". $_REQUEST["add_provider"] ."'";
 		}
 		if ($_REQUEST["add_region_city"]) {
-			$inserts["region"] = "INSERT INTO ". $dbt_region ." SET city = '". $_REQUEST["add_region_city"] ."', postalcode = '". $_REQUEST["add_region_postalcode"] ."', area = '". $_REQUEST["add_region_area"] ."', country = '". $_REQUEST["country"] ."'";
+			$inserts["region"] = "INSERT INTO ". $dbt_region ." SET city = '". ucwords($_REQUEST["add_region_city"]) ."', postalcode = '". $_REQUEST["add_region_postalcode"] ."', area = '". ucwords($_REQUEST["add_region_area"]) ."', country = '". $_REQUEST["country"] ."'";
 		}
 		
 		// execute the inserts
