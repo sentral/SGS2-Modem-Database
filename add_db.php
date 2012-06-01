@@ -8,10 +8,17 @@ include_once("utils.php");
 
 connect();
 
-if ($_REQUEST["action"]) {
+if (isset($_REQUEST["action"]) && $_REQUEST["action"] == "addentry") {
 	//dumpRequest();
 	logMessage("add_db.php: Adding an entry...");
-	if (addEntry()) {
+	$vkey = "";
+	if (addEntry($vkey)) {
+		mail($_REQUEST["add_email"], "SGS2 Modem Database Verification",
+		"Hello,\n
+please click the following link to approve your identity and your entry to our database. Please notice that your email was not stored in the database and is just used for verification purposes !\n\n
+Click here to finish verification: http://www.advins.de/modemdb/index.php?vkey=". $vkey ."\n\n
+Thanks + Regards,\n
+SGS2 Modem DB Team");
 ?>
 Der Eintrag wurde hinzugef&uuml;gt, ist jedoch noch nicht freigeschaltet ! Bitte klicke auf den Aktivierungslink, der an deine angegebene Email-Adresse versandt wurde !
 <?
@@ -127,7 +134,7 @@ else {
  	});
 </script>
 
-	<form id="add_entry" method="POST" action="<? echo $_SERVER['PHP_SELF']; ?>">
+	<form id="add_entry" method="POST" action="<? echo $_SERVER['PHP_SELF']; ?>" onsubmit="event.returnValue = false; return false;">
 	  <input type="hidden" name="action" value="addentry">
 	  <table>
 	    <tr>
@@ -225,6 +232,12 @@ else {
 		  </td>
 		</tr>
 		<tr>
+		  <td>Avg. dBm WiFi:</td>
+		  <td>
+			- <input type="text" name="add_avgdbm_wifi" size="3"> dBm
+		  </td>
+		</tr>
+		<tr>
 		  <td>beobachtete Zeitspanne:</td>
 		  <td>
 			<input type="text" name="add_timetested" size="3"> Tag(e)
@@ -236,7 +249,7 @@ else {
 <?
 }
 
-function addEntry() {
+function addEntry(&$vkey) {
 	global $dbt_data;
 	global $dbt_modem;
 	global $dbt_firmware;
@@ -265,7 +278,6 @@ function addEntry() {
 		$data_items = array("modem" => $_REQUEST["modem"], "firmware" => $_REQUEST["firmware"], "kernel" => $_REQUEST["kernel"], "provider" => $_REQUEST["provider"], "region" => $_REQUEST["region"]);
 		// generate insert and retrieve statements upfront
 		$inserts = array();
-		$retrieves = array();
 		if ($_REQUEST["add_modem"]) {
 			$inserts["modem"] = "INSERT INTO ". $dbt_modem ." SET modem = '". $_REQUEST["add_modem"] ."', ics_only = '". $_REQUEST["modem_ics"] ."'";
 		}
@@ -310,23 +322,18 @@ function addEntry() {
 		// preserve the "-" if there is already one, otherwise add it
 		$avg_dBm = $_REQUEST["add_avgdbm"];
 		$avg_dBm = ($_REQUEST["add_avgdbm"] != "" && substr($_REQUEST["add_avgdbm"], 0, 1) == "-") ? $avg_dBm : "-". $avg_dBm;
+		$avg_dBm_w = $_REQUEST["add_avgdbm_wifi"];
+		$avg_dBm_w = ($_REQUEST["add_avgdbm_wifi"] != "" && substr($_REQUEST["add_avgdbm_wifi"], 0, 1) == "-") ? $avg_dBm_w : "-". $avg_dBm_w;
 		
-		$sql = "INSERT INTO ". $dbt_data ." SET provider = ". $data_items["provider"] .", modem = ". $data_items["modem"] .", firmware = ". $data_items["firmware"] .", kernel = ". $data_items["kernel"] .", region = ". $data_items["region"] .", phone_quality = ". $_REQUEST["phoneq"] .", internet_quality = ". $_REQUEST["inetq"] .", avg_dBm = '". $avg_dBm ."', timetested = ". $_REQUEST["add_timetested"];
-		logMessage("addEntry: $sql >". $sql ."<");
-		mysql_query($sql) or die("Fehler bei Abfrage >". $sql ."< : ". mysql_errno ." (". mysql_error() .")");
+		$asql = "INSERT INTO ". $dbt_data ." SET provider = ". $data_items["provider"] .", modem = ". $data_items["modem"] .", firmware = ". $data_items["firmware"] .", kernel = ". $data_items["kernel"] .", region = ". $data_items["region"] .", phone_quality = ". $_REQUEST["phoneq"] .", internet_quality = ". $_REQUEST["inetq"] .", avg_dBm = '". $avg_dBm ."', avg_dBm_wifi = '". $avg_dBm_w ."' , timetested = ". $_REQUEST["add_timetested"];
+		logMessage("addEntry: \$asql >". $asql ."<");
+		mysql_query($asql) or die("Fehler bei Abfrage >". $asql ."< : ". mysql_errno ." (". mysql_error() .")");
 
 		$data_entry = mysql_insert_id();
 		$vkey = uniqid();
 		$vsql = "INSERT INTO ". $dbt_verify ." SET vkey = '". $vkey ."', data_entry = ". $data_entry;
-		logMessage("addEntry: $vsql >". $vsql ."<");
+		logMessage("addEntry: \$vsql >". $vsql ."<");
 		mysql_query($vsql) or die("Fehler bei Abfrage >". $vsql ."< : ". mysql_errno ." (". mysql_error() .")");
-		
-		mail($_REQUEST["add_email"], "SGS2 Modem Database Verification",
-		"Hello,\n
-please click the following link to approve your identity and your entry to our database. Please notice that your email was not stored in the database and is just used for verification purposes !\n\n
-Click here to finish verification: http://www.advins.de/modemdb/index.php?vkey=". $vkey ."\n\n
-Thanks + Regards,\n
-SGS2 Modem DB Team");
 		
 		$added = true;
 	}
@@ -336,6 +343,6 @@ SGS2 Modem DB Team");
 
 disconnect();
 
-dumpLog();
+//dumpLog();
 
 ?>

@@ -95,12 +95,12 @@ include_once("verify.php");
 if ($_REQUEST["vkey"]) {
 	if (approve($_REQUEST["vkey"])) {
 ?>
-			  Dein Eintrag wurde freigeschaltet.
+			  <p style="font-weight: bold;">Dein Eintrag wurde freigeschaltet.</p>
 <?
 	}
 	else {
 ?>
-			  Dieser Eintrag kann nicht mehr freigeschaltet werden.
+			  <p style="font-weight: bold;">Dieser Eintrag kann nicht mehr freigeschaltet werden.</p>
 <?
 	}
 }
