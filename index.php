@@ -69,6 +69,11 @@ include_once("verify.php");
 						  <option value="NULL">Select...</option>
 						  <? tableToSelect($dbt_provider, "provid", "provider", "provid", "approved = 'X'"); ?>
 						</select>
+						Region:&nbsp;
+						<select name="area">
+						  <option value="NULL">Select...</option>
+						  <? tableToSelect($dbt_region, "area", "area", "area", ""); ?>
+						</select>
 				    </td>
 				  </tr>
 				  <tr>

@@ -10,6 +10,13 @@ connect();
 $sql = "SELECT * FROM ". $dbt_data ." WHERE ";
 $where_clause = "approved = 'X' ";
 
+$query_area = false;
+$area_sql = "SELECT region_id FROM ". $dbt_region ." WHERE ";
+if ($_REQUEST["area"] && $_REQUEST["area"] != "NULL") {
+	$area_sql .= "area = '". $_REQUEST["area"] ."'";
+	$query_area = true;
+}
+
 if ($_REQUEST["modem"] && $_REQUEST["modem"] != "NULL") {
 	if ($where_clause != "") {
 		$where_clause .= " AND ";
@@ -33,6 +40,25 @@ if ($_REQUEST["provider"] && $_REQUEST["provider"] != "NULL") {
 		$where_clause .= " AND ";
 	}
 	$where_clause .= "provider = ". $_REQUEST["provider"];
+}
+
+if ($query_area) {
+	logMessage("query_db: Area Query: >". $area_sql ."<");
+	$aresult = mysql_query($area_sql) or die("Fehler bei Abfrage >". $area_sql ."< : ". mysql_errno ." (". mysql_error() .")");
+	if ($aresult && mysql_num_rows($aresult) > 0) {
+		if ($where_clause != "") {
+			$where_clause .= " AND ";
+		}
+		$where_clause .= "region IN (";
+		$insql = "";
+		while ($row = mysql_fetch_array($aresult)) {
+			if ($insql != "") {
+				$insql .= ", ";
+			}
+			$insql .= $row[0];
+		}
+		$where_clause .= $insql .")";
+	}
 }
 
 logMessage("query_db: ". $sql .$where_clause);
