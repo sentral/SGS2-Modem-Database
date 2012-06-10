@@ -3,10 +3,16 @@
 include_once("dbconnect.php");
 include_once("logging.php");
 
-function tableToSelect($dbtable, $dbcolForValue, $dbColForOption, $orderByCol = "", $whereClause = "") {
+function tableToSelectM($dbtable, $dbColForValue, array $dbColForOption, $orderByCol = "", $whereClause = "") {
 	connect();
 	
-	$sql = "SELECT ". $dbcolForValue .", ". $dbColForOption ." FROM ". $dbtable;
+	$sqlDbColsForDisplay = "";
+	// loop through the display columns for select control / combobox
+	foreach ($dbColForOption as $col) {
+		$sqlDbColsForDisplay .= ", ". $col;
+	}
+	
+	$sql = "SELECT ". $dbColForValue . $sqlDbColsForDisplay ." FROM ". $dbtable;
 	if ($whereClause != "") {
 		$sql .= " WHERE ". $whereClause;
 	}
@@ -21,13 +27,27 @@ function tableToSelect($dbtable, $dbcolForValue, $dbColForOption, $orderByCol = 
 
 	if ($result && mysql_num_rows($result) > 0) {
 		while ($row = mysql_fetch_array($result)) {
-			$strOption = "<option value=\"". $row[0] ."\">". $row[1] ."</option>\n";
+			// assemble the columns to be displayed to a string of "... / ... / ..."
+			$display = "";
+			// count($row) delivered crapy values - use the parameter array instead + 1 for considering $dbColForValue in result
+			$cnt = count($dbColForOption) + 1;
+			for ($i = 1; $i < $cnt; $i++) {
+				$display .= $row[$i];
+				if ($i + 1 < $cnt) {
+					$display .= " / ";
+				}
+			}
+			$strOption = "<option value=\"". $row[0] ."\">". $display ."</option>\n";
 			//logMessage("tableToSelect: ". htmlspecialchars($strOption));
 			print $strOption;
 		}
 	}
 	
 	disconnect();
+}
+
+function tableToSelect($dbtable, $dbColForValue, $dbColForOption, $orderByCol = "", $whereClause = "") {
+	tableToSelectM($dbtable, $dbColForValue, array($dbColForOption), $orderByCol, $whereClause);
 }
 
 //

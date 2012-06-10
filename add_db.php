@@ -188,7 +188,7 @@ else {
 			  <tr>
 			    <td>
 		          <select name="region">
-			        <? tableToSelect($dbt_region, "region_id", "city", "city"); ?>
+			        <? tableToSelectM($dbt_region, "region_id", array("city", "postalcode", "area", "country"), "city"); ?>
 			      </select>
 				</td>
 			  </tr>
